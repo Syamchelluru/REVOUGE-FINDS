@@ -4,7 +4,7 @@ const dotenv = require("dotenv");
 const helmet = require("helmet");
 const morgan = require("morgan");
 
-// Load env vars
+// Load environment variables
 dotenv.config();
 
 const app = express();
@@ -17,7 +17,7 @@ if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
 
-// CORS setup
+// CORS setup (use frontend URL from environment)
 app.use(
   cors({
     origin: process.env.CLIENT_URL || "http://localhost:5173",
@@ -31,11 +31,10 @@ app.use(express.urlencoded({ limit: "10mb", extended: true }));
 
 // Routes
 const authRoutes = require("./modules/auth/authRoutes");
-// comment/remove addressRoutes until we build it
-// const addressRoutes = require("./modules/address/addressRoutes");
+const addressRoutes = require("./modules/address/addressRoutes");
 
 app.use("/api/auth", authRoutes);
-// app.use("/api/address", addressRoutes);
+app.use("/api/address", addressRoutes);
 
 // Test route
 app.get("/", (req, res) => {

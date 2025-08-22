@@ -1,6 +1,6 @@
-// src/services/authService.ts
-const API_URL = "http://localhost:5000/api/auth";
+const API_URL = `${import.meta.env.VITE_API_URL}/auth`;
 
+// Login
 export const login = async (emailOrMobile: string, password: string) => {
   const res = await fetch(`${API_URL}/login`, {
     method: "POST",
@@ -12,8 +12,9 @@ export const login = async (emailOrMobile: string, password: string) => {
   return data;
 };
 
+// Register
 export const register = async (name: string, email: string, mobile: string, password: string) => {
-  const res = await fetch(`${API_URL}/signup`, {  // <-- changed here to /signup
+  const res = await fetch(`${API_URL}/signup`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ name, email, mobile, password }),
