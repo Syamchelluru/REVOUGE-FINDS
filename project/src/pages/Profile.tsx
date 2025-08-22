@@ -1,9 +1,8 @@
-// src/pages/Profile.tsx
 import React, { useState, useEffect } from "react";
 import { Button, Form, Card, Spinner, Alert } from "react-bootstrap";
 import { getProfile, updateProfile } from "../services/profileService";
 import { useNavigate } from "react-router-dom";
-import {jwtDecode} from "jwt-decode";
+import jwtDecode from "jwt-decode";
 
 interface JwtPayload {
   exp: number;
@@ -22,25 +21,33 @@ const Profile: React.FC = () => {
     profilePic: "",
   });
 
+  const token = localStorage.getItem("token");
+
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
-        const token = localStorage.getItem("token");
-
-        // Redirect if no token
         if (!token) {
           navigate("/login");
           return;
         }
 
-        // Check if token expired
-        const decoded: JwtPayload = jwtDecode(token);
+        // Decode and check token expiry
+        let decoded: JwtPayload;
+        try {
+          decoded = jwtDecode(token);
+        } catch (err) {
+          localStorage.removeItem("token");
+          navigate("/login");
+          return;
+        }
+
         if (decoded.exp * 1000 < Date.now()) {
           localStorage.removeItem("token");
           navigate("/login");
           return;
         }
 
+        // Fetch profile
         const data = await getProfile(token);
         setProfile({
           name: data.name || "",
@@ -48,15 +55,15 @@ const Profile: React.FC = () => {
           mobile: data.mobile || "",
           profilePic: data.profilePic || "",
         });
-      } catch (err) {
-        setError((err as Error).message);
+      } catch (err: any) {
+        setError(err.response?.data?.message || err.message || "Failed to load profile.");
       } finally {
         setLoading(false);
       }
     };
 
     fetchProfileData();
-  }, [navigate]);
+  }, [navigate, token]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setProfile({ ...profile, [e.target.name]: e.target.value });
@@ -83,14 +90,12 @@ const Profile: React.FC = () => {
   };
 
   const handleSave = async () => {
+    if (!token) {
+      navigate("/login");
+      return;
+    }
     try {
       setSaving(true);
-      const token = localStorage.getItem("token");
-      if (!token) {
-        navigate("/login");
-        return;
-      }
-
       const updated = await updateProfile(token, {
         name: profile.name,
         profilePic: profile.profilePic,
@@ -104,8 +109,8 @@ const Profile: React.FC = () => {
 
       alert("✅ Profile updated successfully!");
       setEditing(false);
-    } catch (err) {
-      setError((err as Error).message);
+    } catch (err: any) {
+      setError(err.response?.data?.message || err.message || "Failed to save profile.");
     } finally {
       setSaving(false);
     }

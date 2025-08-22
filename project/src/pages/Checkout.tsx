@@ -28,24 +28,30 @@ const Checkout: React.FC = () => {
   const token = localStorage.getItem("token");
 
   const fetchAddresses = async () => {
-    if (token) {
+    if (!token) return alert("Please login first.");
+    try {
       const res = await getAddresses();
       if (res.success) {
         setAddresses(res.addresses);
         const defaultAddr = res.addresses.find(addr => addr.isDefault);
         if (defaultAddr) setSelectedAddress(defaultAddr);
+      } else {
+        alert(res.message || "Failed to fetch addresses.");
       }
+    } catch (err: any) {
+      alert(err.message || "Error fetching addresses.");
     }
   };
 
   useEffect(() => { fetchAddresses(); }, [token]);
 
   const saveAddress = async () => {
+    if (!token) return alert("Please login first.");
     if (addresses.length >= 5) {
       alert("You can only save up to 5 addresses.");
       return;
     }
-    if (token) {
+    try {
       const res = await addAddress(formData);
       if (res.success) {
         setAddresses(res.addresses);
@@ -56,6 +62,8 @@ const Checkout: React.FC = () => {
       } else {
         alert(res.message || "Failed to add address.");
       }
+    } catch (err: any) {
+      alert(err.message || "Failed to add address.");
     }
   };
 
@@ -64,16 +72,29 @@ const Checkout: React.FC = () => {
   };
 
   const handleDelete = async (id: string) => {
-    const res = await deleteAddress(id);
-    if (res.success) setAddresses(res.addresses);
+    if (!token) return alert("Please login first.");
+    try {
+      const res = await deleteAddress(id);
+      if (res.success) setAddresses(res.addresses);
+      else alert(res.message || "Failed to delete address.");
+    } catch (err: any) {
+      alert(err.message || "Failed to delete address.");
+    }
   };
 
   const handleSetDefault = async (id: string) => {
-    const res = await setDefaultAddress(id);
-    if (res.success) {
-      setAddresses(res.addresses);
-      const defaultAddr = res.addresses.find(addr => addr.isDefault);
-      if (defaultAddr) setSelectedAddress(defaultAddr);
+    if (!token) return alert("Please login first.");
+    try {
+      const res = await setDefaultAddress(id);
+      if (res.success) {
+        setAddresses(res.addresses);
+        const defaultAddr = res.addresses.find(addr => addr.isDefault);
+        if (defaultAddr) setSelectedAddress(defaultAddr);
+      } else {
+        alert(res.message || "Failed to set default address.");
+      }
+    } catch (err: any) {
+      alert(err.message || "Failed to set default address.");
     }
   };
 
