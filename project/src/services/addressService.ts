@@ -1,8 +1,16 @@
 import axios from "axios";
 
-const API_URL = `${import.meta.env.VITE_API_URL}/address`;
+const API_URL = import.meta.env.VITE_API_URL
+  ? `${import.meta.env.VITE_API_URL}/address`
+  : "http://localhost:5000/api/address";
 
 const getToken = () => localStorage.getItem("token") || "";
+
+// Helper function for error handling
+const handleError = (error: any) => {
+  console.error("Address Service Error:", error.response?.data || error.message);
+  return { success: false, message: error.response?.data?.message || "Something went wrong", addresses: [] };
+};
 
 // Get all addresses
 export const getAddresses = async () => {
@@ -11,9 +19,8 @@ export const getAddresses = async () => {
       headers: { Authorization: `Bearer ${getToken()}` },
     });
     return { success: true, addresses: res.data.addresses || [] };
-  } catch (error: any) {
-    console.error("Error fetching addresses:", error.response?.data || error.message);
-    return { success: false, addresses: [] };
+  } catch (error) {
+    return handleError(error);
   }
 };
 
@@ -24,9 +31,8 @@ export const addAddress = async (address: any) => {
       headers: { Authorization: `Bearer ${getToken()}` },
     });
     return { success: true, addresses: res.data.addresses || [] };
-  } catch (error: any) {
-    console.error("Error adding address:", error.response?.data || error.message);
-    return { success: false, addresses: [] };
+  } catch (error) {
+    return handleError(error);
   }
 };
 
@@ -37,9 +43,8 @@ export const updateAddress = async (id: string, address: any) => {
       headers: { Authorization: `Bearer ${getToken()}` },
     });
     return { success: true, addresses: res.data.addresses || [] };
-  } catch (error: any) {
-    console.error("Error updating address:", error.response?.data || error.message);
-    return { success: false, addresses: [] };
+  } catch (error) {
+    return handleError(error);
   }
 };
 
@@ -50,9 +55,8 @@ export const deleteAddress = async (id: string) => {
       headers: { Authorization: `Bearer ${getToken()}` },
     });
     return { success: true, addresses: res.data.addresses || [] };
-  } catch (error: any) {
-    console.error("Error deleting address:", error.response?.data || error.message);
-    return { success: false, addresses: [] };
+  } catch (error) {
+    return handleError(error);
   }
 };
 
@@ -63,8 +67,7 @@ export const setDefaultAddress = async (id: string) => {
       headers: { Authorization: `Bearer ${getToken()}` },
     });
     return { success: true, addresses: res.data.addresses || [] };
-  } catch (error: any) {
-    console.error("Error setting default address:", error.response?.data || error.message);
-    return { success: false, addresses: [] };
+  } catch (error) {
+    return handleError(error);
   }
 };
